@@ -1,0 +1,82 @@
+package repositories
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/lucas-simao/go-template-api/internal/models"
+	log "github.com/lucas-simao/golog"
+)
+
+type {{ .ServiceName | ToTitle }}InterfaceRepository interface {
+	Create{{ .ServiceName | ToTitle }}(ctx context.Context, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) (*uuid.UUID, error)
+	Get{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) (*models.{{ .ServiceName | ToTitle }}, error)
+	Update{{ .ServiceName | ToTitle }}(ctx context.Context, id uuid.UUID, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) error
+	Delete{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) error
+}
+
+type {{ .ServiceName | ToTitle }}DBRepository struct {
+	*sqlx.DB
+}
+
+func New{{ .ServiceName | ToTitle }}DBRepository(db *sqlx.DB) {{ .ServiceName | ToTitle }}InterfaceRepository {
+	return &{{ .ServiceName | ToTitle }}DBRepository{db}
+}
+
+func (r *{{ .ServiceName | ToTitle }}DBRepository) Create{{ .ServiceName | ToTitle }}(ctx context.Context, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) (*uuid.UUID, error) {
+	query := `{{ .InsertQuery }}`
+
+	var id = new(uuid.UUID)
+
+	err := r.DB.QueryRowContext(ctx, query, {{ .InsertQueryArgs }}).Scan(&id)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return id, nil
+}
+
+func (r *{{ .ServiceName | ToTitle }}DBRepository) Get{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) (*models.{{ .ServiceName | ToTitle }}, error) {
+	query := `{{ .GetQuery }}`
+
+	{{ .ServiceName | ToLower }} := new(models.{{ .ServiceName | ToTitle }})
+
+	err := r.DB.QueryRowContext(ctx, query, id).Scan({{ .GetQueryArgs }})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		log.Error(err)
+		return nil, err
+	}
+
+	return {{ .ServiceName | ToLower }}, nil
+}
+
+func (r *{{ .ServiceName | ToTitle }}DBRepository) Update{{ .ServiceName | ToTitle }}(ctx context.Context, id uuid.UUID, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) error {
+	query := `{{ .UpdateQuery }}`
+
+	_, err := r.DB.ExecContext(ctx, query, {{ .InsertQueryArgs }}, id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *{{ .ServiceName | ToTitle }}DBRepository) Delete{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) error {
+	query := `{{ .DeleteQuery }}`
+
+	_, err := r.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
+}

@@ -1,0 +1,108 @@
+package controllers
+
+import (
+	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/labstack/echo/v4"
+	"github.com/lucas-simao/go-template-api/internal/models"
+	"github.com/lucas-simao/go-template-api/internal/services"
+	log "github.com/lucas-simao/golog"
+)
+
+type {{ .ServiceName | ToTitle }}Controller struct {
+	service services.{{ .ServiceName | ToTitle }}Interface
+}
+
+func New{{ .ServiceName | ToTitle }}Controller(e *echo.Echo, db *sqlx.DB) {
+	service := {{ .ServiceName | ToTitle }}Controller{services.New{{ .ServiceName | ToTitle }}Service(db)}
+
+	v1 := e.Group("/{{ .ServiceName | ToLower }}")
+	v1.POST("", service.Create{{ .ServiceName | ToTitle }}())
+	v1.GET("/:id", service.Get{{ .ServiceName | ToTitle }}ById())
+	v1.PATCH("/:id", service.Update{{ .ServiceName | ToTitle }}())
+	v1.DELETE("/:id", service.Delete{{ .ServiceName | ToTitle }}ById())
+}
+
+func (c *{{ .ServiceName | ToTitle }}Controller) Create{{ .ServiceName | ToTitle }}() echo.HandlerFunc {
+	return func(e echo.Context) error {
+		ctx := e.Request().Context()
+
+		p := models.{{ .ServiceName | ToTitle }}{}
+		if err := e.Bind(&p); err != nil {
+			log.Error(err)
+			return e.JSON(http.StatusBadRequest, err)
+		}
+
+		id, err := c.service.Create{{ .ServiceName | ToTitle }}(ctx, p)
+		if err != nil {
+			return e.JSON(http.StatusInternalServerError, err)
+		}
+
+		return e.JSON(http.StatusCreated, map[string]interface{}{
+			"id": id,
+		})
+	}
+}
+
+func (c *{{ .ServiceName | ToTitle }}Controller) Get{{ .ServiceName | ToTitle }}ById() echo.HandlerFunc {
+	return func(e echo.Context) error {
+		ctx := e.Request().Context()
+
+		id, err := uuid.Parse(e.Param("id"))
+		if err != nil {
+			log.Error(err)
+			return e.JSON(http.StatusBadRequest, err)
+		}
+
+		resp, err := c.service.Get{{ .ServiceName | ToTitle }}ById(ctx, id)
+		if err != nil {
+			return e.JSON(http.StatusInternalServerError, err)
+		}
+
+		return e.JSON(http.StatusOK, resp)
+	}
+}
+
+func (c *{{ .ServiceName | ToTitle }}Controller) Update{{ .ServiceName | ToTitle }}() echo.HandlerFunc {
+	return func(e echo.Context) error {
+		ctx := e.Request().Context()
+
+		p := models.{{ .ServiceName | ToTitle }}{}
+		if err := e.Bind(&p); err != nil {
+			log.Error(err)
+			return e.JSON(http.StatusBadRequest, err)
+		}
+
+		id, err := uuid.Parse(e.Param("id"))
+		if err != nil {
+			log.Error(err)
+			return e.JSON(http.StatusBadRequest, err)
+		}
+
+		if err := c.service.Update{{ .ServiceName | ToTitle }}(ctx, id, p); err != nil {
+			return e.JSON(http.StatusInternalServerError, err)
+		}
+
+		return e.NoContent(http.StatusOK)
+	}
+}
+
+func (c *{{ .ServiceName | ToTitle }}Controller) Delete{{ .ServiceName | ToTitle }}ById() echo.HandlerFunc {
+	return func(e echo.Context) error {
+		ctx := e.Request().Context()
+
+		id, err := uuid.Parse(e.Param("id"))
+		if err != nil {
+			log.Error(err)
+			return e.JSON(http.StatusBadRequest, err)
+		}
+
+		if err := c.service.Delete{{ .ServiceName | ToTitle }}ById(ctx, id); err != nil {
+			return e.JSON(http.StatusInternalServerError, err)
+		}
+
+		return e.NoContent(http.StatusOK)
+	}
+}

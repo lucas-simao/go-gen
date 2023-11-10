@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoGen</title>
+  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/prism.css" />
+  <script type="text/javascript" src="/js/prism.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <h1>GoGen</h1>
+  <div class="form">
+    <div class="form__grid">
+      <div class="field">
+        <label for="projectName">Project name</label>
+        <input id="projectName" type="text">
+      </div>
+      <div class="field">
+        <label for="serviceName">Service name</label>
+        <input id="serviceName" type="text">
+      </div>
+      <button onclick="generateMyCode()">Generate my code</button>
+    </div>
+    <div class="field">
+      <label for="json">JSON to generate struct</label>
+      <textarea id="json" name="json" rows="11" cols="50"></textarea>
+    </div>
+  </div>
+
+  <div class="code line-numbers" data-prismjs-copy-timeout="500">
+    {{if .Main}}
+    <span>{{ .MainPath }}</span>
+    <pre><code class="language-go" data-prismjs-copy="Copy model!">{{ .Main }}</code></pre>
+    {{end}}
+  </div>
+
+  <div class="code line-numbers" data-prismjs-copy-timeout="500">
+    {{if .Model}}
+    <span>{{ .ModelPath }}</span>
+    <pre><code class="language-go" data-prismjs-copy="Copy model!">{{ .Model }}</code></pre>
+    {{end}}
+  </div>
+
+  <div class="code line-numbers" data-prismjs-copy-timeout=" 500">
+    {{if .Controller}}
+    <span>{{ .ControllerPath }}</span>
+    <pre><code class="language-go" data-prismjs-copy="Copy controller!">{{ .Controller }}</code></pre>
+    {{end}}
+  </div>
+
+  <div class="code line-numbers" data-prismjs-copy-timeout=" 500">
+    {{if .Service}}
+    <span>{{ .ServicePath }}</span>
+    <pre><code class="language-go" data-prismjs-copy="Copy usecase!">{{ .Service }}</code></pre>
+    {{end}}
+  </div>
+
+  <div class="code line-numbers" data-prismjs-copy-timeout=" 500">
+    {{if .Repository}}
+    <span>{{ .RepositoryPath }}</span>
+    <pre><code class="language-go" data-prismjs-copy="Copy repository!">{{ .Repository }}</code></pre>
+    {{end}}
+  </div>
+
+  <script>
+    async function generateMyCode () {
+      const projectName = document.getElementById("projectName").value;
+      const serviceName = document.getElementById("serviceName").value;
+      const json = document.getElementById("json").value.replace(/[\n\t\s]/g, '');
+
+      var url = window.location.origin + "?projectName=" + projectName + "&serviceName=" + serviceName + "&json=" + json
+      window.open(url, "_self")
+    }
+  </script>
+</body>
+
+</html>

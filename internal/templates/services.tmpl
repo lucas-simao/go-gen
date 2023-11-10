@@ -1,0 +1,43 @@
+package services
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
+	"github.com/lucas-simao/go-template-api/internal/models"
+	"github.com/lucas-simao/go-template-api/internal/repositories"
+)
+
+type {{ .ServiceName | ToTitle }}Interface interface {
+	Create{{ .ServiceName | ToTitle }}(ctx context.Context, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) (*uuid.UUID, error)
+	Get{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) (*models.{{ .ServiceName | ToTitle }}, error)
+	Update{{ .ServiceName | ToTitle }}(ctx context.Context, id uuid.UUID, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) error
+	Delete{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) error
+}
+
+type {{ .ServiceName | ToTitle }}Service struct {
+	repo repositories.{{ .ServiceName | ToTitle }}InterfaceRepository
+}
+
+func New{{ .ServiceName | ToTitle }}Service(db *sqlx.DB) {{ .ServiceName | ToTitle }}Interface {
+	return &{{ .ServiceName | ToTitle }}Service{
+		repo: repositories.New{{ .ServiceName | ToTitle }}DBRepository(db),
+	}
+}
+
+func (s *{{ .ServiceName | ToTitle }}Service) Create{{ .ServiceName | ToTitle }}(ctx context.Context, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) (*uuid.UUID, error) {
+	return s.repo.Create{{ .ServiceName | ToTitle }}(ctx, {{ .ServiceName | ToLower }})
+}
+
+func (s *{{ .ServiceName | ToTitle }}Service) Get{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) (*models.{{ .ServiceName | ToTitle }}, error) {
+	return s.repo.Get{{ .ServiceName | ToTitle }}ById(ctx, id)
+}
+
+func (s *{{ .ServiceName | ToTitle }}Service) Update{{ .ServiceName | ToTitle }}(ctx context.Context, id uuid.UUID, {{ .ServiceName | ToLower }} models.{{ .ServiceName | ToTitle }}) error {
+	return s.repo.Update{{ .ServiceName | ToTitle }}(ctx, id, {{ .ServiceName | ToLower }})
+}
+
+func (s *{{ .ServiceName | ToTitle }}Service) Delete{{ .ServiceName | ToTitle }}ById(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete{{ .ServiceName | ToTitle }}ById(ctx, id)
+}
